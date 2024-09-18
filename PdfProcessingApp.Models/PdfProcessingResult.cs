@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PdfProcessingApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,13 +9,14 @@ namespace PdfProcessingApp.Models
 {
     public class PdfProcessingResult
     {
-        public List<string> ProcessedPages { get; set; }
-        public List<string> SavedImages { get; set; }
+        public PdfDocument Document { get; set; }
+        public List<DocumentSection> Sections { get; set; }
+        public List<ImageMetadata> Images { get; set; }
 
         public PdfProcessingResult()
         {
-            ProcessedPages = new List<string>();
-            SavedImages = new List<string>();
+            Sections = new List<DocumentSection>();
+            Images = new List<ImageMetadata>();
         }
     }
 }

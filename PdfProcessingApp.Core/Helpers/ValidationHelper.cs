@@ -14,9 +14,9 @@ namespace PdfProcessingApp.Core.Helpers
             return file != null && file.ContentType == "application/pdf";
         }
 
-        public static bool ValidateKeywords(List<string> keywords)
-        {
-            return keywords != null && keywords.Count > 0;
-        }
+        //public static bool ValidateKeywords(List<string> keywords)
+        //{
+        //    return keywords != null && keywords.Count > 0;
+        //}
     }
 }

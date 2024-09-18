@@ -8,21 +8,18 @@ using System.Threading.Tasks;
 
 namespace PdfProcessingApp.Models
 {
-    public class PdfDocument
-    {
-        [Required(ErrorMessage = "PDF dosyası gereklidir.")]
-        [DataType(DataType.Upload)]
-        public IFormFile File { get; set; }
-
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
-
-        [Required(ErrorMessage = "Anahtar kelimeler listesi boş olamaz.")]
-        public List<string> Keywords { get; set; }
-
-        public PdfDocument()
+    
+        public class PdfDocument
         {
-            Keywords = new List<string>();
+            public string FileName { get; set; }
+            public long FileSize { get; set; }
+            public DateTime CreatedDate { get; set; }
+            public List<DocumentSection> Sections { get; set; }
+
+            public PdfDocument()
+            {
+                Sections = new List<DocumentSection>();
+            }
         }
+
     }
-}
