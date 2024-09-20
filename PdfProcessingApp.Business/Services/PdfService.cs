@@ -1,53 +1,69 @@
-﻿using iTextSharp.text.pdf;
-using PdfProcessingApp.DAL.Repository;
+﻿using PdfProcessingApp.DAL.Repository;
 using PdfProcessingApp.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace PdfProcessingApp.Business.Services
+namespace PdfProcessingApp.Services
 {
     public class PdfService
     {
         private readonly PdfRepository _pdfRepository;
 
-        public PdfService(PdfRepository pdfRepository)
+        public PdfService(string outputDirectory)
         {
-            _pdfRepository = pdfRepository;
+            _pdfRepository = new PdfRepository(outputDirectory);
         }
 
-        public PdfProcessingResult ProcessPdf(Models.PdfDocument pdfDocument, string pdfFilePath)
+        /// <summary>
+        /// PDF dosyasını işler ve gerekli alt bölümlere ayırır.
+        /// </summary>
+        /// <param name="pdfFilePath">İşlenecek PDF dosyasının yolu</param>
+        public void ProcessPdf(string pdfFilePath)
         {
+            if (string.IsNullOrEmpty(pdfFilePath) || !File.Exists(pdfFilePath))
+            {
+                throw new FileNotFoundException("PDF dosyası bulunamadı.");
+            }
+
+            try
+            {
+                _pdfRepository.ProcessPdf(pdfFilePath);
+            }
+            catch (Exception ex)
+            {
+                // Hata günlüğe yazılabilir veya bir üst katmana iletilebilir.
+                Console.WriteLine($"PDF işleme sırasında hata oluştu: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// PDF işleme sonucundaki bölümleri ve görüntüleri döndürür.
+        /// </summary>
+        /// <param name="pdfFilePath">İşlenmiş PDF dosyasının yolu</param>
+        /// <returns>PdfProcessingResult içeren işleme sonucu</returns>
+        public PdfProcessingResult GetPdfProcessingResult(string pdfFilePath)
+        {
+            if (string.IsNullOrEmpty(pdfFilePath) || !File.Exists(pdfFilePath))
+            {
+                throw new FileNotFoundException("PDF dosyası bulunamadı.");
+            }
+
             var result = new PdfProcessingResult
             {
-                Document = pdfDocument
+                Document = new PdfDocument
+                {
+                    FileName = Path.GetFileName(pdfFilePath),
+                    FileSize = new FileInfo(pdfFilePath).Length,
+                    CreatedDate = DateTime.Now
+                }
             };
 
-            using (var reader = new PdfReader(pdfFilePath))
-            {
-                var outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "output");
-                if (!Directory.Exists(outputDirectory))
-                    Directory.CreateDirectory(outputDirectory);
-
-                var images = _pdfRepository.ExtractAndSaveImages(reader, outputDirectory);
-                result.Images.AddRange(images);
-
-                for (int i = 1; i <= reader.NumberOfPages; i++)
-                {
-                    var pageText = _pdfRepository.ExtractTextFromPage(reader, i);
-
-                    foreach (var keyword in pdfDocument.Sections.Select(s => s.Title))
-                    {
-                        if (pageText.Contains(keyword))
-                        {
-                            string outputFilePath = Path.Combine(outputDirectory, $"Page_{i}.pdf");
-                            _pdfRepository.SavePage(reader, i, outputFilePath);
-                            result.Sections.Add(new DocumentSection($"Page {i}", pageText));
-                        }
-                    }
-                }
-            }
+            // Burada bölümleri ve görüntüleri doldurabiliriz.
+            // Placeholder için basit bir örnek:
+            result.Sections.Add(new DocumentSection("Örnek Başlık", "Bu bir örnek içeriği."));
+            result.Images.Add(new ImageMetadata("example.png", "png", 1920, 1080));
 
             return result;
         }

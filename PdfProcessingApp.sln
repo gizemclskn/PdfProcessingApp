@@ -3,23 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfProcessingApp.Presentation", "PdfProcessingApp.Presentation\PdfProcessingApp.Presentation.csproj", "{5138E297-E4BA-4D4A-A4B3-FB778342441C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Presentation", "PdfProcessingApp.Presentation\PdfProcessingApp.Presentation.csproj", "{5138E297-E4BA-4D4A-A4B3-FB778342441C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfProcessingApp.Business", "PdfProcessingApp.Business\PdfProcessingApp.Business.csproj", "{024E82A2-70DF-4B5D-AA31-6C66FBEF7784}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Business", "PdfProcessingApp.Business\PdfProcessingApp.Business.csproj", "{024E82A2-70DF-4B5D-AA31-6C66FBEF7784}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfProcessingApp.Models", "PdfProcessingApp.Models\PdfProcessingApp.Models.csproj", "{C1477710-831C-404E-AF7C-C13C82EAEE42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Models", "PdfProcessingApp.Models\PdfProcessingApp.Models.csproj", "{C1477710-831C-404E-AF7C-C13C82EAEE42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfProcessingApp.DAL", "PdfProcessingApp.DAL\PdfProcessingApp.DAL.csproj", "{35D4B95F-557C-4EE1-B496-FA178ACC4923}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.DAL", "PdfProcessingApp.DAL\PdfProcessingApp.DAL.csproj", "{35D4B95F-557C-4EE1-B496-FA178ACC4923}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfProcessingApp.Core", "PdfProcessingApp.Core\PdfProcessingApp.Core.csproj", "{5E9255C7-CBF3-4785-BCE4-60657C6121F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Core", "PdfProcessingApp.Core\PdfProcessingApp.Core.csproj", "{5E9255C7-CBF3-4785-BCE4-60657C6121F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{9C8210E6-0498-4264-AADC-1AE43874B1B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5138E297-E4BA-4D4A-A4B3-FB778342441C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +41,15 @@ Global
 		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CD8DA66-8F72-4C25-999B-FE1E942A3DFA}
 	EndGlobalSection
 EndGlobal

@@ -1,73 +1,128 @@
-﻿using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.parser;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using PdfProcessingApp.Models;
+using Tesseract;
+using ImageMagick;
+using System.Text;
+using iText.Kernel.Pdf;
 
 namespace PdfProcessingApp.DAL.Repository
 {
     public class PdfRepository
     {
-        // Metin çıkarma işlemi
-        public string ExtractTextFromPage(PdfReader reader, int pageNumber)
+        private string _tessDataPath;
+        private string _outputDirectory;
+        private Dictionary<string, int> _headerPageNumberPairs;
+
+        public PdfRepository(string outputDirectory) 
         {
-            return PdfTextExtractor.GetTextFromPage(reader, pageNumber);
+            _tessDataPath = @"C:\Users\ahmet\Source\Repos\PdfProcessingApp\PdfProcessingApp.DAL\tessdata";
+            _outputDirectory = outputDirectory;
+            _headerPageNumberPairs = new Dictionary<string, int>
+            {
+                {"IS BASVURU FORMU", 0 },
+                {"TURKIYE CUMHURIYETI KIMLIK KARTI", 3 },
+                {"ISKUR KAYIT BELGESI", 0 },
+                {"ADLI SICIL KAYDI", 0 },
+                {"YERLESIM YERI VE DIGER ADRES BELGESI", 0 },
+                {"NUFUS KAYIT ORNEGI", 0 },
+                {"ASKERALMA GENEL MUDURLUGU", 0 },
+                {"VADESIZ HESAP BILGILERI", 0 },
+                {"OGRENIM BELGESI", 0 },
+                {"ISYERI UNVAN LISTESI", 0 },
+                {"KURS BITIRME BELGESI", 0 },
+                {"IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI", 0 },
+                {"PERIYODIK MUAYENE FORMU", 0 }
+            };
         }
 
-        public void SavePage(PdfReader reader, int pageNumber, string outputFilePath)
+        public void ProcessPdf(string pdfPath)
         {
-            using (var document = new iTextSharp.text.Document())
+            using (MagickImageCollection images = new MagickImageCollection())
             {
-                PdfCopy copy = new PdfCopy(document, new FileStream(outputFilePath, FileMode.Create));
-                document.Open();
-                copy.AddPage(copy.GetImportedPage(reader, pageNumber));
-                document.Close();
-            }
-        }
-
-        // resim çıkarma ve kaydetme
-        public List<ImageMetadata> ExtractAndSaveImages(PdfReader reader, string outputDirectory)
-        {
-            var images = new List<ImageMetadata>();
-
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            for (int i = 1; i <= reader.NumberOfPages; i++)
-            {
-                var page = reader.GetPageN(i);
-                var resources = page.GetAsDict(PdfName.RESOURCES);
-                var xObject = resources.GetAsDict(PdfName.XOBJECT);
-
-                if (xObject == null) continue;
-
-                foreach (PdfName key in xObject.Keys)
+                var settings = new MagickReadSettings()
                 {
-                    var obj = xObject.GetDirectObject(key);
-                    if (obj is PdfStream stream && PdfName.IMAGE.Equals(stream.Get(PdfName.SUBTYPE)))
+                    Density = new Density(300)
+                };
+
+                images.Read(pdfPath, settings);
+
+                for (int i = 0; i < images.Count; i++)
+                {
+                    string outputImagePath = Path.Combine(_outputDirectory, $"page-{i + 1}.png");
+                    images[i].Write(outputImagePath);
+
+                    using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
                     {
-                        string imageFileName = $"Page_{i}_Image_{key}.jpg";
-                        string imageFilePath = System.IO.Path.Combine(outputDirectory, imageFileName);
-
-                        using (var imgStream = new MemoryStream(stream.GetBytes()))
+                        using (var img = Pix.LoadFromFile(outputImagePath))
                         {
-                            using (var img = Image.FromStream(imgStream))
+                            using (var page = engine.Process(img, PageSegMode.AutoOsd))
                             {
-                                img.Save(imageFilePath, ImageFormat.Jpeg);
+                                string text = page.GetText().ToUpper();
+                                text = ReplaceTurkishCharacters(text);
 
-                                var metadata = new ImageMetadata(imageFileName, "jpeg", img.Width, img.Height);
-                                images.Add(metadata);
+                                foreach (var header in _headerPageNumberPairs.Keys.ToList())
+                                {
+                                    if (text.Contains(header))
+                                    {
+                                        _headerPageNumberPairs[header] = i + 1;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            return images;
+            CreateNewPdfsFromHeaders(pdfPath);
+        }
+
+        public string ReplaceTurkishCharacters(string input)
+        {
+            StringBuilder sb = new StringBuilder(input);
+
+            sb.Replace('İ', 'I');
+            sb.Replace('Ç', 'C');
+            sb.Replace('Ş', 'S');
+            sb.Replace('Ğ', 'G');
+            sb.Replace('Ü', 'U');
+            sb.Replace('Ö', 'O');
+
+            return sb.ToString();
+        }
+
+        private void CreateNewPdfsFromHeaders(string inputFilePath)
+        {
+            string outputFolder = Path.Combine(_outputDirectory, "PDFs");
+
+            if (!Directory.Exists(outputFolder))
+            {
+                Directory.CreateDirectory(outputFolder);
+            }
+
+            using (iText.Kernel.Pdf.PdfDocument pdfDoc = new iText.Kernel.Pdf.PdfDocument(new PdfReader(inputFilePath)))
+            {
+                var headers = _headerPageNumberPairs
+                    .OrderBy(kvp => kvp.Value)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                for (int i = 0; i < headers.Count - 1; i++)
+                {
+                    using (iText.Kernel.Pdf.PdfDocument newPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(Path.Combine(outputFolder, $"{headers[i]}.pdf"))))
+                    {
+                        int firstPageNumber = _headerPageNumberPairs[headers[i]];
+                        int lastPageNumber = _headerPageNumberPairs[headers[i + 1]];
+
+                        for (int j = firstPageNumber; j < lastPageNumber; j++)
+                        {
+                            pdfDoc.CopyPagesTo(j, j, newPdf);
+                        }
+                    }
+                }
+            }
         }
     }
 }
