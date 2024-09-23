@@ -1,4 +1,6 @@
-﻿using PdfProcessingApp.Services;
+﻿using PdfProcessingApp.Business.Services;
+using System;
+using System.IO;
 
 namespace ConsoleApp1
 {
@@ -9,8 +11,8 @@ namespace ConsoleApp1
             try
             {
                 // PDF dosyasının yolunu belirleyin
-                string pdfFilePath = @"C:\Users\ahmet\Desktop\örnek özlük dosyası.pdf";  // İşlemek istediğiniz PDF dosyasının yolu
-                string outputDirectory = @"C:\Users\ahmet\Downloads";  // Çıktıların yazılacağı dizin
+                string pdfFilePath = @"C:\Users\gizem\Downloads\örnek özlük dosyası.pdf";  // İşlemek istediğiniz PDF dosyasının yolu
+                string outputDirectory = @"C:\Users\gizem\Downloads\PDFs";  // Çıktıların yazılacağı dizin
 
                 // Output dizini kontrol et, yoksa oluştur
                 if (!Directory.Exists(outputDirectory))
@@ -26,29 +28,14 @@ namespace ConsoleApp1
                 pdfService.ProcessPdf(pdfFilePath);
                 Console.WriteLine("PDF işleme tamamlandı.");
 
-                // İşleme sonucunu alın
-                var result = pdfService.GetPdfProcessingResult(pdfFilePath);
+                // İşlenmiş başlıkları alın
+                var processedHeaders = pdfService.GetProcessedHeaders();
 
                 // İşleme sonuçlarını konsola yazdır
-                Console.WriteLine("PDF İşleme Sonuçları:");
-                Console.WriteLine($"Belge Adı: {result.Document.FileName}");
-                Console.WriteLine($"Belge Boyutu: {result.Document.FileSize} bytes");
-                Console.WriteLine($"Oluşturulma Tarihi: {result.Document.CreatedDate}");
-
-                // Bölümler ve Görüntüleri yazdır
-                foreach (var section in result.Sections)
+                Console.WriteLine("İşlenmiş Başlıklar:");
+                foreach (var header in processedHeaders)
                 {
-                    Console.WriteLine($"\nBölüm Başlığı: {section.Title}");
-                    Console.WriteLine($"Bölüm İçeriği: {section.Content}");
-                    Console.WriteLine($"Resim Yolu: {section.ImageFilePath}");
-                    Console.WriteLine($"Oluşturulma Tarihi: {section.CreatedDate}");
-                }
-
-                foreach (var image in result.Images)
-                {
-                    Console.WriteLine($"\nGörüntü Dosyası: {image.FileName}");
-                    Console.WriteLine($"Format: {image.Format}");
-                    Console.WriteLine($"Boyutlar: {image.Width}x{image.Height}");
+                    Console.WriteLine(header);
                 }
             }
             catch (Exception ex)

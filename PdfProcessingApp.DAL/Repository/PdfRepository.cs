@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using PdfProcessingApp.Models;
-using Tesseract;
-using ImageMagick;
+using System.Linq;
 using System.Text;
+using ImageMagick;
 using iText.Kernel.Pdf;
+using Tesseract;
 
 namespace PdfProcessingApp.DAL.Repository
 {
@@ -16,9 +14,9 @@ namespace PdfProcessingApp.DAL.Repository
         private string _outputDirectory;
         private Dictionary<string, int> _headerPageNumberPairs;
 
-        public PdfRepository(string outputDirectory) 
+        public PdfRepository(string outputDirectory)
         {
-            _tessDataPath = @"C:\Users\ahmet\Source\Repos\PdfProcessingApp\PdfProcessingApp.DAL\tessdata";
+            _tessDataPath = @"C:\Users\gizem\Source\Repos\PdfProcessingApp\PdfProcessingApp.DAL\tessdata";
             _outputDirectory = outputDirectory;
             _headerPageNumberPairs = new Dictionary<string, int>
             {
@@ -40,46 +38,85 @@ namespace PdfProcessingApp.DAL.Repository
 
         public void ProcessPdf(string pdfPath)
         {
+            var settings = new MagickReadSettings { Density = new Density(300) };
+
             using (MagickImageCollection images = new MagickImageCollection())
             {
-                var settings = new MagickReadSettings()
-                {
-                    Density = new Density(300)
-                };
-
                 images.Read(pdfPath, settings);
 
-                for (int i = 0; i < images.Count; i++)
+                Parallel.ForEach(images.Select((image, index) => new { image, index }), (imgInfo) =>
                 {
-                    string outputImagePath = Path.Combine(_outputDirectory, $"page-{i + 1}.png");
-                    images[i].Write(outputImagePath);
-
-                    using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
+                    using (var memoryStream = new MemoryStream())
                     {
-                        using (var img = Pix.LoadFromFile(outputImagePath))
-                        {
-                            using (var page = engine.Process(img, PageSegMode.AutoOsd))
-                            {
-                                string text = page.GetText().ToUpper();
-                                text = ReplaceTurkishCharacters(text);
+                        imgInfo.image.Write(memoryStream, MagickFormat.Png);
+                        memoryStream.Position = 0;
 
-                                foreach (var header in _headerPageNumberPairs.Keys.ToList())
+                        using (var img = Pix.LoadFromMemory(memoryStream.ToArray()))
+                        {
+                            using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
+                            {
+                                using (var page = engine.Process(img, PageSegMode.Auto))
                                 {
-                                    if (text.Contains(header))
+                                    string text = page.GetText().ToUpper();
+                                    text = ReplaceTurkishCharacters(text); // Türkçe karakterleri düzelt
+
+                                    lock (_headerPageNumberPairs)
                                     {
-                                        _headerPageNumberPairs[header] = i + 1;
+                                        foreach (var header in _headerPageNumberPairs.Keys.ToList())
+                                        {
+                                            if (text.Contains(header.ToUpper())) // Başlık kontrolü büyük harfle
+                                            {
+                                                _headerPageNumberPairs[header] = imgInfo.index + 1;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
+                });
             }
 
             CreateNewPdfsFromHeaders(pdfPath);
         }
 
-        public string ReplaceTurkishCharacters(string input)
+        private void CreateNewPdfsFromHeaders(string inputFilePath)
+        {
+            string outputFolder = Path.Combine(_outputDirectory, "PDFs");
+            if (!Directory.Exists(outputFolder))
+            {
+                Directory.CreateDirectory(outputFolder);
+            }
+
+            using (PdfDocument pdfDoc = new PdfDocument(new PdfReader(inputFilePath)))
+            {
+                var headers = _headerPageNumberPairs.Where(kvp => kvp.Value > 0)
+                                                     .OrderBy(kvp => kvp.Value)
+                                                     .Select(kvp => kvp.Key)
+                                                     .ToList();
+
+                for (int i = 0; i < headers.Count - 1; i++)
+                {
+                    string newPdfPath = Path.Combine(outputFolder, $"{headers[i]}.pdf");
+                    using (PdfDocument newPdf = new PdfDocument(new PdfWriter(newPdfPath)))
+                    {
+                        int firstPageNumber = _headerPageNumberPairs[headers[i]];
+                        int lastPageNumber = _headerPageNumberPairs[headers[i + 1]];
+                        pdfDoc.CopyPagesTo(firstPageNumber, lastPageNumber - 1, newPdf);
+                    }
+                }
+
+                // Son başlık için ayrı işlem
+                string lastPdfPath = Path.Combine(outputFolder, $"{headers.Last()}.pdf");
+                using (PdfDocument lastPdf = new PdfDocument(new PdfWriter(lastPdfPath)))
+                {
+                    int firstPageNumber = _headerPageNumberPairs[headers.Last()];
+                    pdfDoc.CopyPagesTo(firstPageNumber, pdfDoc.GetNumberOfPages(), lastPdf);
+                }
+            }
+        }
+
+        private string ReplaceTurkishCharacters(string input)
         {
             StringBuilder sb = new StringBuilder(input);
 
@@ -92,37 +129,9 @@ namespace PdfProcessingApp.DAL.Repository
 
             return sb.ToString();
         }
-
-        private void CreateNewPdfsFromHeaders(string inputFilePath)
+        public Dictionary<string, int> GetHeaderPageNumbers()
         {
-            string outputFolder = Path.Combine(_outputDirectory, "PDFs");
-
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-
-            using (iText.Kernel.Pdf.PdfDocument pdfDoc = new iText.Kernel.Pdf.PdfDocument(new PdfReader(inputFilePath)))
-            {
-                var headers = _headerPageNumberPairs
-                    .OrderBy(kvp => kvp.Value)
-                    .Select(kvp => kvp.Key)
-                    .ToList();
-
-                for (int i = 0; i < headers.Count - 1; i++)
-                {
-                    using (iText.Kernel.Pdf.PdfDocument newPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(Path.Combine(outputFolder, $"{headers[i]}.pdf"))))
-                    {
-                        int firstPageNumber = _headerPageNumberPairs[headers[i]];
-                        int lastPageNumber = _headerPageNumberPairs[headers[i + 1]];
-
-                        for (int j = firstPageNumber; j < lastPageNumber; j++)
-                        {
-                            pdfDoc.CopyPagesTo(j, j, newPdf);
-                        }
-                    }
-                }
-            }
+            return _headerPageNumberPairs;
         }
     }
 }
