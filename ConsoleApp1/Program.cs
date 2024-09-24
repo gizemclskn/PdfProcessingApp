@@ -11,8 +11,8 @@ namespace ConsoleApp1
             try
             {
                 // PDF dosyasının yolunu belirleyin
-                string pdfFilePath = @"C:\Users\ahmet\Desktop\örnek özlük dosyası.pdf";  // İşlemek istediğiniz PDF dosyasının yolu
-                string outputDirectory = @"C:\Users\ahmet\Desktop";  // Çıktıların yazılacağı dizin
+                string pdfFilePath = @"C:\Users\gizem\Downloads\örnek özlük dosyası.pdf"; // PDF dosyasının yolu
+                string outputDirectory = @"C:\Users\gizem\Downloads\PDFs"; // Çıktıların yazılacağı dizin
 
                 // Output dizini kontrol et, yoksa oluştur
                 if (!Directory.Exists(outputDirectory))
@@ -20,7 +20,6 @@ namespace ConsoleApp1
                     Directory.CreateDirectory(outputDirectory);
                 }
 
-                // PdfService nesnesini oluştur
                 PdfService pdfService = new PdfService(outputDirectory);
 
                 // PDF dosyasını işleyin

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using ImageMagick;
 using iText.Kernel.Pdf;
-using Org.BouncyCastle.Ocsp;
 using Tesseract;
 
 namespace PdfProcessingApp.DAL.Repository
@@ -51,12 +50,12 @@ namespace PdfProcessingApp.DAL.Repository
 
                     using (var img = Pix.LoadFromMemory(memoryStream.ToArray()))
                     {
-                        CallTesseract(img, imgInfo.index);
+                        ProcessImageWithTesseract(img, imgInfo.index);
                     }
                 }
             });
 
-            CreateNewPdfsFromHeaders(pdfPath);
+            GenerateNewPdfsFromHeaders(pdfPath);
         }
 
         private MagickImageCollection ConvertPdfToImage(string pdfPath)
@@ -68,23 +67,22 @@ namespace PdfProcessingApp.DAL.Repository
             return images;
         }
 
-        private void CallTesseract(Pix img, int index)
+        private void ProcessImageWithTesseract(Pix img, int index)
         {
             using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
             {
                 var page = engine.Process(img, PageSegMode.AutoOsd);
-
                 string text = page.GetText().ToUpper();
                 text = ReplaceTurkishCharacters(text);
 
                 lock (_headerPageNumberPairs)
                 {
-                    SetHeaderPageNumber(text, index);
+                    UpdateHeaderPageNumber(text, index);
                 }
-            }        
+            }
         }
 
-        private void SetHeaderPageNumber(string text, int index)
+        private void UpdateHeaderPageNumber(string text, int index)
         {
             foreach (var header in _headerPageNumberPairs.Keys.ToList())
             {
@@ -95,32 +93,41 @@ namespace PdfProcessingApp.DAL.Repository
             }
         }
 
-        private void CreateNewPdfsFromHeaders(string inputFilePath)
+        private void GenerateNewPdfsFromHeaders(string inputFilePath)
         {
-            string outputFolder = CreateFileDirectory();
+            string outputFolder = CreateOutputDirectory();
+            int unidentifiedDocCounter = 1;
 
             using (PdfDocument pdfDoc = new PdfDocument(new PdfReader(inputFilePath)))
             {
-                var headers = SortIdentifiedHeader();
+                var headers = SortIdentifiedHeaders();
 
-                for (int i = 0; i < headers.Count; i++)
+                for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++)
                 {
-                    int firstPageNumber = _headerPageNumberPairs[headers[i]];
-                    int lastPageNumber;
-                    string newPdfPath = Path.Combine(outputFolder, $"{headers[i]}.pdf");
-
-                    using (PdfDocument newPdf = new PdfDocument(new PdfWriter(newPdfPath)))
+                    bool foundHeader = false;
+                    foreach (var header in headers)
                     {
-                        if (i == headers.Count - 1)
+                        if (_headerPageNumberPairs[header] == i)
                         {
-                            lastPageNumber = pdfDoc.GetNumberOfPages();
+                            // Sayfada başlık varsa, o başlıkla PDF oluşturuluyor.
+                            using (PdfDocument newPdf = new PdfDocument(new PdfWriter(Path.Combine(outputFolder, $"{header}.pdf"))))
+                            {
+                                pdfDoc.CopyPagesTo(i, i, newPdf);
+                            }
+                            foundHeader = true;
+                            break;
                         }
-                        else
-                        {
-                            lastPageNumber = _headerPageNumberPairs[headers[i + 1]] - 1;
-                        }
+                    }
 
-                        pdfDoc.CopyPagesTo(firstPageNumber, lastPageNumber, newPdf);
+                    if (!foundHeader)
+                    {
+                        // Sayfada başlık yoksa, "Belirlenemeyen Doküman" şeklinde ayrı PDF kaydediliyor.
+                        string unidentifiedDocPath = Path.Combine(outputFolder, $"BelirlenemeyenDokuman{unidentifiedDocCounter}.pdf");
+                        using (PdfDocument unidentifiedPdf = new PdfDocument(new PdfWriter(unidentifiedDocPath)))
+                        {
+                            pdfDoc.CopyPagesTo(i, i, unidentifiedPdf);
+                        }
+                        unidentifiedDocCounter++;
                     }
                 }
             }
@@ -140,7 +147,7 @@ namespace PdfProcessingApp.DAL.Repository
             return sb.ToString();
         }
 
-        private string CreateFileDirectory()
+        private string CreateOutputDirectory()
         {
             string outputFolder = Path.Combine(_outputDirectory, "PDFs");
 
@@ -152,13 +159,14 @@ namespace PdfProcessingApp.DAL.Repository
             return outputFolder;
         }
 
-        private List<string> SortIdentifiedHeader()
+        private List<string> SortIdentifiedHeaders()
         {
             return _headerPageNumberPairs.Where(kvp => kvp.Value > 0)
                                      .OrderBy(kvp => kvp.Value)
                                      .Select(kvp => kvp.Key)
                                      .ToList();
         }
+
         public Dictionary<string, int> GetHeaderPageNumbers()
         {
             return _headerPageNumberPairs;
