@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace PdfProcessingApp.Models
 {
-    
-        public class PdfDocument
+
+    public class PdfDocument
+    {
+        public string FileName { get; set; }
+        public long FileSize { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public List<DocumentSection> Sections { get; set; }
+
+        public PdfDocument()
         {
-            public string FileName { get; set; }
-            public long FileSize { get; set; }
-            public DateTime CreatedDate { get; set; }
-            public List<DocumentSection> Sections { get; set; }
-
-            public PdfDocument()
-            {
-                Sections = new List<DocumentSection>();
-            }
+            Sections = new List<DocumentSection>();
         }
-
     }
+
+}
