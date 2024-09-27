@@ -10,28 +10,38 @@ namespace ConsoleApp1
         {
             try
             {
-                string pdfFilePath = @"C:\Users\gizem\Downloads\örnek özlük dosyası.pdf"; // PDF dosyasının yolu
-                string outputDirectory = @"C:\Users\gizem\Downloads\PDFs"; // Çıktıların yazılacağı dizin
+                // PDF dosyasının yolu
+                string pdfFilePath = @"C:\Users\gizem\Downloads\örnek özlük dosyası.pdf";
+                // Çıktıların yazılacağı dizin
+                string outputDirectory = @"C:\Users\gizem\Downloads\PDFs";
 
+                // Çıktı dizinini kontrol et ve oluştur
                 if (!Directory.Exists(outputDirectory))
                 {
                     Directory.CreateDirectory(outputDirectory);
                 }
 
+                // PdfService örneği oluştur
                 PdfService pdfService = new PdfService(outputDirectory);
 
                 Console.WriteLine("PDF dosyası işleniyor...");
-                pdfService.ProcessPdf(pdfFilePath);
+                pdfService.ProcessPdf(pdfFilePath); // PDF dosyasını işle
                 Console.WriteLine("PDF işleme tamamlandı.");
 
-
+                // İşlenmiş başlıkları al
                 var processedHeaders = pdfService.GetProcessedHeaders();
 
-
                 Console.WriteLine("İşlenmiş Başlıklar:");
-                foreach (var header in processedHeaders)
+                if (processedHeaders != null && processedHeaders.Count > 0)
                 {
-                    Console.WriteLine(header);
+                    foreach (var header in processedHeaders)
+                    {
+                        Console.WriteLine(header); // İşlenmiş başlıkları yazdır
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Hiçbir başlık işlenmedi.");
                 }
             }
             catch (Exception ex)

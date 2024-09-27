@@ -3,14 +3,15 @@ using PdfProcessingApp.Models;
 
 namespace PdfProcessingApp.DAL;
 
-public class AppDbContext : DbContext
+public class AppDbContext :DbContext
 {
+    public AppDbContext(DbContextOptions<AppDbContext> options): base(options)
+    {
+    }
     public DbSet<PdfDocument> PdfDocuments { get; set; }
     public DbSet<DocumentSection> DocumentSections { get; set; }
     public DbSet<Keyword> Keywords { get; set; }
     public DbSet<ImageMetadata> ImageMetadatas { get; set; }
-
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

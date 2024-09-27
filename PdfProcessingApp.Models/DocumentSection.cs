@@ -8,18 +8,20 @@ namespace PdfProcessingApp.Models
 {
     public class DocumentSection
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
+        public int Id { get; private set; }
+        public string? Title { get; set; }
         public string Content { get; set; }
         public string ImageFilePath { get; set; }
         public DateTime CreatedDate { get; set; }
         public List<Keyword> Keywords { get; set; }
         public ImageMetadata ImageMetadata { get; set; }
 
-        public DocumentSection()
+        public DocumentSection(string title, List<Keyword> keywords)
         {
+            Title = title;
+            Keywords = keywords;
+
            
-        Keywords = new List<Keyword>();
         }
     }
 }
