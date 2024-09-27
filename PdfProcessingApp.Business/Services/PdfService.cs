@@ -29,7 +29,10 @@ namespace PdfProcessingApp.Business.Services
         {
             new DocumentSection("IS BASVURU FORMU", new List<Keyword>
             {
-                new Keyword("IS BASVURU FORMU"),new Keyword("Haftasonu çalışabilirmisiniz"), new Keyword("İş ilanımızı veya SİEM markasını nereden duydunuz")
+                new Keyword("IS BASVURU FORMU"),
+                //new Keyword("EGITIM BILGILERI"),
+                new Keyword("HAFTASONU CALISABILIRMISINIZ"),
+                //new Keyword("IS ILANIMIZI VEYA SIEM MARKASINI NEREDEN DUYDUNUZ")
             }),
               new DocumentSection("PERIYODIK MUAYENE FORMU", new List<Keyword>
             {
@@ -41,54 +44,59 @@ namespace PdfProcessingApp.Business.Services
             {
                 new Keyword("TURKIYE CUMHURIYETI KIMLIK KART")
             }),
-            //new DocumentSection("ISKUR KAYIT BELGESI", new List<Keyword>
-            //{
-            //    new Keyword("İŞKUR"), new Keyword("kayıt")
-            //}),
-            //new DocumentSection("ADLI SICIL KAYDI", new List<Keyword>
-            //{
-            //    new Keyword("adli"), new Keyword("sicil")
-            //}),
-            //new DocumentSection("YERLESIM YERI VE DIGER ADRES BELGESI", new List<Keyword>
-            //{
-            //    new Keyword("adres"), new Keyword("yerleşim")
-            //}),
-            //new DocumentSection("NUFUS KAYIT ORNEGI", new List<Keyword>
-            //{
-            //    new Keyword("nüfus"), new Keyword("örneği")
-            //}),
-            //new DocumentSection("ASKERALMA GENEL MUDURLUGU", new List<Keyword>
-            //{
-            //    new Keyword("asker alma"), new Keyword("genel müdürlük")
-            //}),
-            //new DocumentSection("VADESIZ HESAP BILGILERI", new List<Keyword>
-            //{
-            //    new Keyword("vadesiz hesap"), new Keyword("bilgileri")
-            //}),
-            //new DocumentSection("OGRENIM BELGESI", new List<Keyword>
-            //{
-            //    new Keyword("öğrenim"), new Keyword("belgesi")
-            //}),
-            //new DocumentSection("ISYERI UNVAN LISTESI", new List<Keyword>
-            //{
-            //    new Keyword("iş yeri"), new Keyword("ünvan")
-            //}),
-            //new DocumentSection("KURS BITIRME BELGESI", new List<Keyword>
-            //{
-            //    new Keyword("kurs bitirme"), new Keyword("belgesi")
-            //}),
-            //new DocumentSection("IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI", new List<Keyword>
-            //{
-            //    new Keyword("iş sağlığı"), new Keyword("katılım belgesi")
-            //}),
-          
+            new DocumentSection("ISKUR KAYIT BELGESI", new List<Keyword>
+            {
+                new Keyword("ISKUR KAYIT BELGESI")
+            }),
+            new DocumentSection("ADLI SICIL KAYDI", new List<Keyword>
+            {
+                new Keyword("ADLI SICIL KAYDI"), new Keyword("sicil")
+            }),
+            new DocumentSection("YERLESIM YERI VE DIGER ADRES BELGESI", new List<Keyword>
+            {
+                new Keyword("YERLESIM YERI VE DIGER ADRES BELGESI")
+            }),
+            new DocumentSection("NUFUS KAYIT ORNEGI", new List<Keyword>
+            {
+                new Keyword("NUFUS KAYIT ORNEGI")
+            }),
+            new DocumentSection("ASKERALMA GENEL MUDURLUGU", new List<Keyword>
+            {
+                new Keyword("ASKERALMA GENEL MUDURLUGU")
+            }),
+            new DocumentSection("VADESIZ HESAP BILGILERI", new List<Keyword>
+            {
+                new Keyword("VADESIZ HESAP BILGILERI")
+            }),
+            new DocumentSection("OGRENIM BELGESI", new List<Keyword>
+            {
+                new Keyword("OGRENIM BELGESI")
+            }),
+            new DocumentSection("ISYERI UNVAN LISTESI", new List<Keyword>
+            {
+                new Keyword("ISYERI UNVAN LISTESI")
+            }),
+            new DocumentSection("KURS BITIRME BELGESI", new List<Keyword>
+            {
+                new Keyword("KURS BITIRME BELGESI")
+            }),
+            new DocumentSection("IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI", new List<Keyword>
+            {
+                new Keyword("IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI")
+            }),
+               new DocumentSection("T.C. SOSYAL GUVENLIK KURUMU BASKANLIGI EMEKLILIK HIZMETLERI GENEL MUDURLUGU", new List<Keyword>
+            {
+                new Keyword("EMEKLILIK")
+            }),
+
         };
+
         }
 
-        public Dictionary<string, int> GetHeaderPageNumbers()
-        {
-            return _pdfRepository.GetHeaderPageNumbers();
-        }
+        //public Dictionary<string, int> GetHeaderPageNumbers()
+        //{
+        //    return _pdfRepository.GetHeaderPageNumbers();
+        //}
         public List<string> GetProcessedHeaders()
         {
             List<string> processedHeaders = new List<string>();
@@ -96,7 +104,7 @@ namespace PdfProcessingApp.Business.Services
 
             foreach (var header in headerPageNumbers)
             {
-                processedHeaders.Add(header.Key); // Add the header title
+                processedHeaders.Add(header.Key);
             }
 
             return processedHeaders;

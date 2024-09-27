@@ -47,7 +47,7 @@ namespace PdfProcessingApp.DAL.Repository
 
         private MagickImageCollection ConvertPdfToImage(string pdfPath)
         {
-            var settings = new MagickReadSettings { Density = new Density(300) };
+            var settings = new MagickReadSettings { Density = new Density(400) };
             MagickImageCollection images = new MagickImageCollection();
             images.Read(pdfPath, settings);
 
@@ -58,10 +58,10 @@ namespace PdfProcessingApp.DAL.Repository
         {
             using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
             {
-                engine.SetVariable("user_defined_dpi", "300");
+                engine.SetVariable("user_defined_dpi", "400");
+                var page = engine.Process(img, PageSegMode.AutoOsd);
 
-               
-                var page = engine.Process(img, PageSegMode.SingleBlock); 
+                //var page = engine.Process(img, PageSegMode.SingleBlock); 
 
                 string text = page.GetText().ToUpper();
 
@@ -115,6 +115,7 @@ namespace PdfProcessingApp.DAL.Repository
 
                                 sectionPageMapping[section.Title].Add(i);
                                 isMatched = true;
+                                break;
                             }
                         }
                     }
@@ -187,4 +188,4 @@ namespace PdfProcessingApp.DAL.Repository
             return headerPageNumbers;
         }
     }
-}
+} 
