@@ -1,10 +1,5 @@
-﻿using iTextSharp.text.pdf;
-using PdfProcessingApp.DAL.Repository;
+﻿using PdfProcessingApp.DAL.Repository;
 using PdfProcessingApp.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace PdfProcessingApp.Business.Services
 {
@@ -12,44 +7,108 @@ namespace PdfProcessingApp.Business.Services
     {
         private readonly PdfRepository _pdfRepository;
 
-        public PdfService(PdfRepository pdfRepository)
+        public PdfService(string outputDirectory)
         {
-            _pdfRepository = pdfRepository;
+            var documentSections = GetPredefinedSections();
+            _pdfRepository = new PdfRepository(outputDirectory, documentSections);
         }
 
-        public PdfProcessingResult ProcessPdf(Models.PdfDocument pdfDocument, string pdfFilePath)
+        public void ProcessPdf(string pdfFilePath)
         {
-            var result = new PdfProcessingResult
+            if (string.IsNullOrEmpty(pdfFilePath) || !File.Exists(pdfFilePath))
             {
-                Document = pdfDocument
-            };
-
-            using (var reader = new PdfReader(pdfFilePath))
-            {
-                var outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "output");
-                if (!Directory.Exists(outputDirectory))
-                    Directory.CreateDirectory(outputDirectory);
-
-                var images = _pdfRepository.ExtractAndSaveImages(reader, outputDirectory);
-                result.Images.AddRange(images);
-
-                for (int i = 1; i <= reader.NumberOfPages; i++)
-                {
-                    var pageText = _pdfRepository.ExtractTextFromPage(reader, i);
-
-                    foreach (var keyword in pdfDocument.Sections.Select(s => s.Title))
-                    {
-                        if (pageText.Contains(keyword))
-                        {
-                            string outputFilePath = Path.Combine(outputDirectory, $"Page_{i}.pdf");
-                            _pdfRepository.SavePage(reader, i, outputFilePath);
-                            result.Sections.Add(new DocumentSection($"Page {i}", pageText));
-                        }
-                    }
-                }
+                throw new FileNotFoundException($"PDF file not found: {pdfFilePath}");
             }
 
-            return result;
+            _pdfRepository.ProcessPdf(pdfFilePath);
+        }
+
+        private List<DocumentSection> GetPredefinedSections()
+        {
+            return new List<DocumentSection>
+        {
+            new DocumentSection("IS BASVURU FORMU", new List<Keyword>
+            {
+                new Keyword("IS BASVURU FORMU"),
+                //new Keyword("EGITIM BILGILERI"),
+                new Keyword("HAFTASONU CALISABILIRMISINIZ"),
+                //new Keyword("IS ILANIMIZI VEYA SIEM MARKASINI NEREDEN DUYDUNUZ")
+            }),
+              new DocumentSection("PERIYODIK MUAYENE FORMU", new List<Keyword>
+            {
+                new Keyword("PERIYODIK MUAYENE FORMU"),
+                new Keyword("FIZIK MUAYENE SONUCLARI"),
+                new Keyword("MUAYENE")
+            }),
+            new DocumentSection("TURKIYE CUMHURIYETI KIMLIK KARTI", new List<Keyword>
+            {
+                new Keyword("TURKIYE CUMHURIYETI KIMLIK KART")
+            }),
+            new DocumentSection("ISKUR KAYIT BELGESI", new List<Keyword>
+            {
+                new Keyword("ISKUR KAYIT BELGESI")
+            }),
+            new DocumentSection("ADLI SICIL KAYDI", new List<Keyword>
+            {
+                new Keyword("ADLI SICIL KAYDI"), new Keyword("sicil")
+            }),
+            new DocumentSection("YERLESIM YERI VE DIGER ADRES BELGESI", new List<Keyword>
+            {
+                new Keyword("YERLESIM YERI VE DIGER ADRES BELGESI")
+            }),
+            new DocumentSection("NUFUS KAYIT ORNEGI", new List<Keyword>
+            {
+                new Keyword("NUFUS KAYIT ORNEGI")
+            }),
+            new DocumentSection("ASKERALMA GENEL MUDURLUGU", new List<Keyword>
+            {
+                new Keyword("ASKERALMA GENEL MUDURLUGU")
+            }),
+            new DocumentSection("VADESIZ HESAP BILGILERI", new List<Keyword>
+            {
+                new Keyword("VADESIZ HESAP BILGILERI")
+            }),
+            new DocumentSection("OGRENIM BELGESI", new List<Keyword>
+            {
+                new Keyword("OGRENIM BELGESI")
+            }),
+            new DocumentSection("ISYERI UNVAN LISTESI", new List<Keyword>
+            {
+                new Keyword("ISYERI UNVAN LISTESI")
+            }),
+            new DocumentSection("KURS BITIRME BELGESI", new List<Keyword>
+            {
+                new Keyword("KURS BITIRME BELGESI")
+            }),
+            new DocumentSection("IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI", new List<Keyword>
+            {
+                new Keyword("IS SAGLIGI VE GUVENLIGI EGITIM KATILIM BELGESI")
+            }),
+               new DocumentSection("T.C. SOSYAL GUVENLIK KURUMU BASKANLIGI EMEKLILIK HIZMETLERI GENEL MUDURLUGU", new List<Keyword>
+            {
+                new Keyword("EMEKLILIK")
+            }),
+
+        };
+
+        }
+
+        //public Dictionary<string, int> GetHeaderPageNumbers()
+        //{
+        //    return _pdfRepository.GetHeaderPageNumbers();
+        //}
+        public List<string> GetProcessedHeaders()
+        {
+            List<string> processedHeaders = new List<string>();
+            var headerPageNumbers = _pdfRepository.GetHeaderPageNumbers();
+
+            foreach (var header in headerPageNumbers)
+            {
+                processedHeaders.Add(header.Key);
+            }
+
+            return processedHeaders;
         }
     }
 }
+
