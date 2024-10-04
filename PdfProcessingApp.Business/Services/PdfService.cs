@@ -37,7 +37,7 @@ namespace PdfProcessingApp.Business.Services
               new DocumentSection("PERIYODIK MUAYENE FORMU", new List<Keyword>
             {
                 new Keyword("PERIYODIK MUAYENE FORMU"),
-                new Keyword("FIZIK MUAYENE SONUCLARI"),
+             //   new Keyword("FIZIK MUAYENE SONUCLARI"),
                 new Keyword("MUAYENE")
             }),
             new DocumentSection("TURKIYE CUMHURIYETI KIMLIK KARTI", new List<Keyword>

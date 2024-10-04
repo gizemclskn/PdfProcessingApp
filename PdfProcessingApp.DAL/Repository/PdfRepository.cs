@@ -8,6 +8,8 @@ using ImageMagick;
 using iText.Kernel.Pdf;
 using Tesseract;
 using PdfProcessingApp.Models;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using iText.Kernel.Pdf.Canvas.Parser;
 
 namespace PdfProcessingApp.DAL.Repository
 {
@@ -16,6 +18,14 @@ namespace PdfProcessingApp.DAL.Repository
         private readonly string _tessDataPath;
         private readonly string _outputDirectory;
         private readonly List<DocumentSection> _documentSections;
+        private readonly List<ExtractedText> _extractedTexts = new List<ExtractedText>();
+        private readonly Dictionary<string, List<string>> categories = new Dictionary<string, List<string>>
+        {
+            {"Sağlık", new List<string> { "SAĞLIK", "HASTA", "TEDAVİ","Tıbbi","TIBBİ","LABORATUVAR","SAGLIK","OSGB"}},
+            {"Eğitim", new List<string> { "EĞİTİM", "ÖĞRENİM", "OKUL"}},
+            {"Finans", new List<string> { "PARA", "BORÇ", "KREDİ"}},
+            {"Teknik", new List<string> { "TEKNİK", "BİLİŞİM", "YAZILIM"}}
+        };
 
         public PdfRepository(string outputDirectory, List<DocumentSection> documentSections)
         {
@@ -54,22 +64,21 @@ namespace PdfProcessingApp.DAL.Repository
             return images;
         }
 
+
+
         private void ProcessImageWithTesseract(Pix img, int index)
         {
             using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
             {
                 engine.SetVariable("user_defined_dpi", "400");
                 var page = engine.Process(img, PageSegMode.AutoOsd);
-
-                //var page = engine.Process(img, PageSegMode.SingleBlock); 
-
                 string text = page.GetText().ToUpper();
-
                 text = ReplaceTurkishCharacters(text);
 
-                 lock (_documentSections)
+                lock (_documentSections)
                 {
                     UpdateSectionWithKeyword(text, index);
+                    _extractedTexts.Add(new ExtractedText { Text = text, PageIndex = index });
                 }
             }
         }
@@ -102,32 +111,51 @@ namespace PdfProcessingApp.DAL.Repository
                 {
                     bool isMatched = false;
 
-                    foreach (var section in _documentSections)
-                    {
-                        foreach (var keyword in section.Keywords)
-                        {
-                            if (keyword.DocumentSectionId == i)
-                            {
-                                if (!sectionPageMapping.ContainsKey(section.Title))
-                                {
-                                    sectionPageMapping[section.Title] = new List<int>();
-                                }
+                    var extractedText = _extractedTexts.FirstOrDefault(et => et.PageIndex == i - 1); 
 
-                                sectionPageMapping[section.Title].Add(i);
-                                isMatched = true;
-                                break;
+                    if (extractedText != null)
+                    {
+                        foreach (var section in _documentSections)
+                        {
+                            foreach (var keyword in section.Keywords)
+                            {
+                                if (keyword.DocumentSectionId == i)
+                                {
+                                    if (!sectionPageMapping.ContainsKey(section.Title))
+                                    {
+                                        sectionPageMapping[section.Title] = new List<int>();
+                                    }
+
+                                    sectionPageMapping[section.Title].Add(i);
+                                    isMatched = true;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if (!isMatched)
-                    {
-                        string unidentifiedDocPath = Path.Combine(outputFolder, $"BelirlenemeyenDokuman{unidentifiedDocCounter}.pdf");
-                        using (var unidentifiedPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(unidentifiedDocPath)))
+                        if (!isMatched)
                         {
-                            pdfDoc.CopyPagesTo(i, i, unidentifiedPdf);
+                            string text = extractedText.Text;
+                            string identifiedCategory = categories
+                                .FirstOrDefault(c => c.Value.Any(k => text.Contains(k))).Key;
+
+                            string unidentifiedDocPath;
+
+                            if (!string.IsNullOrEmpty(identifiedCategory))
+                            {
+                                unidentifiedDocPath = Path.Combine(outputFolder, $"{identifiedCategory}_BelirlenemeyenDokuman{unidentifiedDocCounter}.pdf");
+                            }
+                            else
+                            {
+                                unidentifiedDocPath = Path.Combine(outputFolder, $"BelirlenemeyenDokuman{unidentifiedDocCounter}.pdf");
+                            }
+
+                            using (var unidentifiedPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(unidentifiedDocPath)))
+                            {
+                                pdfDoc.CopyPagesTo(i, i, unidentifiedPdf);
+                            }
+                            unidentifiedDocCounter++;
                         }
-                        unidentifiedDocCounter++;
                     }
                 }
 
@@ -145,6 +173,7 @@ namespace PdfProcessingApp.DAL.Repository
                 }
             }
         }
+
 
         private string ReplaceTurkishCharacters(string input)
         {
@@ -188,4 +217,9 @@ namespace PdfProcessingApp.DAL.Repository
             return headerPageNumbers;
         }
     }
-} 
+}
+public class ExtractedText
+{
+    public string Text { get; set; }
+    public int PageIndex { get; set; }
+}
