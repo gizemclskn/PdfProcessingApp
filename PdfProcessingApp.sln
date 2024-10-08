@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Models", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.DAL", "PdfProcessingApp.DAL\PdfProcessingApp.DAL.csproj", "{35D4B95F-557C-4EE1-B496-FA178ACC4923}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfProcessingApp.Core", "PdfProcessingApp.Core\PdfProcessingApp.Core.csproj", "{5E9255C7-CBF3-4785-BCE4-60657C6121F8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{9C8210E6-0498-4264-AADC-1AE43874B1B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{9C8210E6-0498-4264-AADC-1AE43874B1B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +35,6 @@ Global
 		{35D4B95F-557C-4EE1-B496-FA178ACC4923}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35D4B95F-557C-4EE1-B496-FA178ACC4923}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35D4B95F-557C-4EE1-B496-FA178ACC4923}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E9255C7-CBF3-4785-BCE4-60657C6121F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C8210E6-0498-4264-AADC-1AE43874B1B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
