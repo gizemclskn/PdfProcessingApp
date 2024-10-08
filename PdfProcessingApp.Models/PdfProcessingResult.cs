@@ -1,9 +1,4 @@
-﻿using PdfProcessingApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PdfProcessingApp.Models
 {
@@ -12,11 +7,5 @@ namespace PdfProcessingApp.Models
         public PdfDocument Document { get; set; }
         public List<DocumentSection> Sections { get; set; }
         public List<ImageMetadata> Images { get; set; }
-
-        public PdfProcessingResult()
-        {
-            Sections = new List<DocumentSection>();
-            Images = new List<ImageMetadata>();
-        }
     }
 }

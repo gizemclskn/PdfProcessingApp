@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PdfProcessingApp.Models
+﻿namespace PdfProcessingApp.Models
 {
     public class DocumentSection
     {
-        public int Id { get; private set; }
+        public int Id { get; set; }
         public string? Title { get; set; }
         public string Content { get; set; }
         public string ImageFilePath { get; set; }
@@ -16,12 +10,7 @@ namespace PdfProcessingApp.Models
         public List<Keyword> Keywords { get; set; }
         public ImageMetadata ImageMetadata { get; set; }
 
-        public DocumentSection(string title, List<Keyword> keywords)
-        {
-            Title = title;
-            Keywords = keywords;
-
-           
-        }
+        public int PdfDocumentId { get; set; }  // Foreign Key
+        public PdfDocument PdfDocument { get; set; }  // Navigasyon özelliği
     }
 }
