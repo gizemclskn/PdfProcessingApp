@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Interface</title>
+</head>
+<body>
+    <h1>Upload a File</h1>
+    <form id="fileForm" method="post" enctype="multipart/form-data">
+        <input type="file" id="fileInput">
+        <button type="submit" onclick="uploadFile()">Upload</button>
+    </form>
+
+    <script>function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('api/pdf/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('Please select a file first.');
+            }
+        }</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-﻿using PdfProcessingApp.DAL.Repository;
+﻿using Microsoft.Extensions.Configuration;
+using PdfProcessingApp.DAL.Repository;
 using PdfProcessingApp.Models;
 
 namespace PdfProcessingApp.Business.Services
@@ -6,11 +7,15 @@ namespace PdfProcessingApp.Business.Services
     public class PdfService
     {
         private readonly PdfRepository _pdfRepository;
+        private string _outputDirectory;
+        private readonly IConfiguration _configuration;
 
-        public PdfService(string outputDirectory)
+        public PdfService(IConfiguration configuration)
         {
+            _configuration = configuration;
             var documentSections = GetPredefinedSections();
-            _pdfRepository = new PdfRepository(outputDirectory, documentSections);
+            _outputDirectory = _configuration["PdfSettings:PdfPath"];
+            _pdfRepository = new PdfRepository(_outputDirectory, documentSections);
         }
 
         public void ProcessPdf(string pdfFilePath)
