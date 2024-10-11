@@ -18,9 +18,10 @@ namespace PdfProcessingApp.Business
     public class PdfManager
     {
         private readonly string _tessDataPath;
-        private readonly string _outputDirectory;
+        public string _outputDirectory;
         private readonly List<DocumentSection> _documentSections;
         private readonly List<ExtractedText> _extractedTexts = new List<ExtractedText>();
+        private readonly IPdfRepository _pdfRepository;
         private readonly Dictionary<string, List<string>> categories = new Dictionary<string, List<string>>
         {
             {"Sağlık", new List<string> { "SAĞLIK", "HASTA", "TEDAVİ","Tıbbi","TIBBİ","LABORATUVAR","SAGLIK","OSGB"}},
@@ -29,7 +30,7 @@ namespace PdfProcessingApp.Business
            
         };
 
-        private readonly IPdfRepository _pdfRepository;
+        
 
         public PdfManager(IPdfRepository pdfRepository, string outputDirectory, List<DocumentSection> documentSections)
         {
@@ -38,7 +39,7 @@ namespace PdfProcessingApp.Business
             _documentSections = documentSections;
             _tessDataPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\PdfProcessingApp.DAL\tessdata"));
         }
-
+        //public string OutputDirectory => _outputDirectory;
         public void ProcessPdf(string pdfPath)
         {
             var images = ConvertPdfToImage(pdfPath);
