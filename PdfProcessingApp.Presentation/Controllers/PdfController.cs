@@ -37,15 +37,12 @@ namespace PdfProcessingApp.Presentation.Controllers
                 return BadRequest("Lütfen bir çıktı dizini belirtin.");
             }
 
-            
             var tempPdfPath = Path.Combine(Path.GetTempPath(), pdfFile.FileName);
 
             using (var stream = new FileStream(tempPdfPath, FileMode.Create))
             {
                 await pdfFile.CopyToAsync(stream);
             }
-
- 
             try
             {
                 _pdfManager._outputDirectory = outputDirectory; 
@@ -64,34 +61,34 @@ namespace PdfProcessingApp.Presentation.Controllers
                 return NotFound("Yeni PDF'ler oluşturulamadı.");
             }
 
-    
-            var zipFilePath = Path.Combine(outputDirectory, "ProcessedPdfs.zip");
-
-            try
+            var fileUrls = new List<string>();
+            foreach (var filePath in newPdfFiles)
             {
-               
-                if (System.IO.File.Exists(zipFilePath))
-                {
-                    System.IO.File.Delete(zipFilePath);
-                }
-
-                using (var zip = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
-                {
-                    foreach (var filePath in newPdfFiles)
-                    {
-                      
-                        var entryName = Path.Combine("PDFs", Path.GetFileName(filePath)); 
-                        zip.CreateEntryFromFile(filePath, entryName);
-                    }
-                }
-
-                var zipFileBytes = await System.IO.File.ReadAllBytesAsync(zipFilePath);
-                return File(zipFileBytes, "application/zip", "ProcessedPdfs.zip");
+                var fileName = Path.GetFileName(filePath);
+                var fileUrl = $"{Request.Scheme}://{Request.Host}/api/Pdf/download?fileName={fileName}";
+                fileUrls.Add(fileUrl);
             }
-            catch (Exception ex)
+
+            return Ok(fileUrls);
+        }
+        [HttpGet("download")]
+        public async Task<IActionResult> DownloadPdf(string fileName, string pdfFolderPath)
+        {
+            if (string.IsNullOrEmpty(fileName))
             {
-                return StatusCode(500, $"ZIP dosyası oluşturulurken hata oluştu: {ex.Message}");
+                return BadRequest("Lütfen bir dosya adı belirtin.");
             }
+
+           
+            var filePath = Path.Combine(pdfFolderPath, fileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Belirtilen PDF dosyası bulunamadı.");
+            }
+
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            return File(fileStream, "application/pdf", fileName);
         }
     }
 }

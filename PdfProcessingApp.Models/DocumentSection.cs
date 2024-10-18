@@ -8,7 +8,6 @@
         public string ImageFilePath { get; set; }
         public DateTime CreatedDate { get; set; }
         public List<Keyword> Keywords { get; set; }
-        public ImageMetadata ImageMetadata { get; set; }
 
         public int PdfDocumentId { get; set; }  // Foreign Key
         public PdfDocument PdfDocument { get; set; }  // Navigasyon özelliği

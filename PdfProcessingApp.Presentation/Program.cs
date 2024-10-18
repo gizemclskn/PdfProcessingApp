@@ -8,7 +8,6 @@ using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,12 +15,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure dependencies for PdfRepository and PdfManager
+
 builder.Services.AddScoped<IPdfRepository, PdfRepository>(serviceProvider =>
 {
     var context = serviceProvider.GetRequiredService<AppDbContext>();
     var outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
-    var documentSections = GetPredefinedSections(); // Load predefined sections
+    var documentSections = GetPredefinedSections();
     return new PdfRepository(context, outputDirectory, documentSections);
 });
 
@@ -29,13 +28,13 @@ builder.Services.AddScoped<PdfManager>(serviceProvider =>
 {
     var pdfRepository = serviceProvider.GetRequiredService<IPdfRepository>();
     var outputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
-    var documentSections = GetPredefinedSections(); // Load predefined sections
+    var documentSections = GetPredefinedSections(); 
     return new PdfManager(pdfRepository, outputDirectory, documentSections);
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -67,7 +66,7 @@ List<DocumentSection> GetPredefinedSections()
         Keywords = new List<Keyword>
                 {
                     new Keyword { Value = "PERIYODIK MUAYENE FORMU" },
-                    new Keyword { Value = "MUAYENE" }
+                    new Keyword { Value = "FIZIK MUAYENE SONUCLARI" }
                 }
     };
     sections.Add(periyodikMuayeneFormu);
@@ -97,8 +96,7 @@ List<DocumentSection> GetPredefinedSections()
         Title = "ADLI SICIL KAYDI",
         Keywords = new List<Keyword>
                 {
-                    new Keyword { Value = "ADLI SICIL KAYDI" },
-                    new Keyword { Value = "sicil" }
+                    new Keyword { Value = "ADLI SICIL KAYDI" }
                 }
     });
     sections.Add(new DocumentSection
@@ -170,7 +168,23 @@ List<DocumentSection> GetPredefinedSections()
         Title = "T.C. SOSYAL GUVENLIK KURUMU BASKANLIGI EMEKLILIK HIZMETLERI GENEL MUDURLUGU",
         Keywords = new List<Keyword>
                 {
-                    new Keyword { Value = "EMEKLILIK" }
+                    new Keyword { Value = "T.C. SOSYAL GUVENLIK KURUMU BASKANLIGI EMEKLILIK HIZMETLERI GENEL MUDURLUGU" },
+                    new Keyword { Value = "4a" },
+                    new Keyword { Value = "UZUN VADE HIZMET DOKUMU" },
+                    new Keyword { Value = "SGRT. STATU" },
+                    new Keyword { Value = "SGRT" }
+                }
+    });
+    sections.Add(new DocumentSection
+    {
+        Title = "SAGLIK DOKUMANI",
+        Keywords = new List<Keyword>
+                {                        
+                    new Keyword { Value = "SAGLIK BAKANLIGI" },
+                    new Keyword { Value = "OSGB" },
+                    new Keyword { Value = "VITAL CAPACITY REPORT" },
+                    new Keyword { Value = "TIBBI" },
+                    new Keyword { Value = "HASTA" },
                 }
     });
 

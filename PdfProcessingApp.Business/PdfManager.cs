@@ -24,13 +24,12 @@ namespace PdfProcessingApp.Business
         private readonly IPdfRepository _pdfRepository;
         private readonly Dictionary<string, List<string>> categories = new Dictionary<string, List<string>>
         {
-            {"Sağlık", new List<string> { "SAĞLIK", "HASTA", "TEDAVİ","Tıbbi","TIBBİ","LABORATUVAR","SAGLIK","OSGB"}},
+
             {"Eğitim", new List<string> { "EĞİTİM", "ÖĞRENİM", "OKUL"}},
-            {"Finans", new List<string> { "PARA", "BORÇ", "KREDİ"}},
-           
+
         };
 
-        
+
 
         public PdfManager(IPdfRepository pdfRepository, string outputDirectory, List<DocumentSection> documentSections)
         {
@@ -63,7 +62,7 @@ namespace PdfProcessingApp.Business
 
         private MagickImageCollection ConvertPdfToImage(string pdfPath)
         {
-            var settings = new MagickReadSettings { Density = new Density(400) };
+            var settings = new MagickReadSettings { Density = new Density(500) };
             MagickImageCollection images = new MagickImageCollection();
             images.Read(pdfPath, settings);
 
@@ -74,7 +73,7 @@ namespace PdfProcessingApp.Business
         {
             using (var engine = new TesseractEngine(_tessDataPath, "tur+eng", EngineMode.Default))
             {
-                engine.SetVariable("user_defined_dpi", "400");
+                engine.SetVariable("user_defined_dpi", "300");
                 var page = engine.Process(img, PageSegMode.AutoOsd);
                 string text = page.GetText().ToUpper();
                 text = ReplaceTurkishCharacters(text);
@@ -95,7 +94,7 @@ namespace PdfProcessingApp.Business
                 {
                     if (text.Contains(keyword.Value.ToUpper()))
                     {
-                        // Doğrudan DocumentSectionId'yi güncelle
+
                         keyword.DocumentSectionId = index + 1;
                     }
                 }
@@ -107,7 +106,7 @@ namespace PdfProcessingApp.Business
             string outputFolder = CreateOutputDirectory();
             int unidentifiedDocCounter = 1;
 
-            using (var pdfDoc = new iText.Kernel.Pdf.PdfDocument(new PdfReader(inputFilePath))) // Tam ad alanı kullanıldı
+            using (var pdfDoc = new iText.Kernel.Pdf.PdfDocument(new PdfReader(inputFilePath)))
             {
                 Dictionary<string, List<int>> sectionPageMapping = new Dictionary<string, List<int>>();
 
@@ -154,7 +153,7 @@ namespace PdfProcessingApp.Business
                                 unidentifiedDocPath = Path.Combine(outputFolder, $"BelirlenemeyenDokuman{unidentifiedDocCounter}.pdf");
                             }
 
-                            using (var unidentifiedPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(unidentifiedDocPath))) // Tam ad alanı kullanıldı
+                            using (var unidentifiedPdf = new iText.Kernel.Pdf.PdfDocument(new PdfWriter(unidentifiedDocPath)))
                             {
                                 pdfDoc.CopyPagesTo(i, i, unidentifiedPdf);
                             }
@@ -221,9 +220,5 @@ namespace PdfProcessingApp.Business
         }
     }
 
-    public class ExtractedText
-    {
-        public string Text { get; set; }
-        public int PageIndex { get; set; }
-    }
+   
 }
